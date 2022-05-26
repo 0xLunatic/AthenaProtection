@@ -1,0 +1,12 @@
+development:
+  locked-server: Development Server
+  whitelisted:
+    - iKagu
+    - Mornov
+    - Kenvera
+
+reload:
+  permission: athenaprotection.reload
+  message:
+    - "&e&lAthena Protection"
+    - "&aPlugin Reloaded!"

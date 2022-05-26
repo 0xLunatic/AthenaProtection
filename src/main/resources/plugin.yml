@@ -1,0 +1,14 @@
+name: AthenaProtection
+version: '${project.version}'
+main: athena.protection.Main
+api-version: 1.16
+authors: [ Mornov ]
+description: Custom Security Plugin
+commands:
+  athenaprotection:
+    aliases: /ap
+    permission: athenaprotection.use
+  access:
+    permission: essentials.jail
+  setaccess:
+    permission: essentials.jail
