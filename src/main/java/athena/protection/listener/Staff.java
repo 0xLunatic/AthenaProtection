@@ -24,15 +24,17 @@ public class Staff extends BukkitRunnable implements Listener {
     }
     @Override
     public void run() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.hasPermission(Objects.requireNonNull(plugin.getConfig().getString("permission-detect")))) {
-                if (plugin.data.getConfig("data.yml").getString("players." + p.getName()) == null) {
-                    Base64.Encoder enc = Base64.getEncoder();
-                    String code = plugin.getConfig().getString("default-key");
-                    String encoded = enc.encodeToString(Objects.requireNonNull(code).getBytes());
-                    plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".code", encoded);
-                    plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".status", "true");
-                    plugin.data.saveConfig("data.yml");
+        if (Objects.requireNonNull(plugin.getConfig().getString("permission-grants-detect")).equalsIgnoreCase("true")){
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (p.hasPermission(Objects.requireNonNull(plugin.getConfig().getString("permission-detect")))) {
+                    if (plugin.data.getConfig("data.yml").getString("players." + p.getName()) == null) {
+                        Base64.Encoder enc = Base64.getEncoder();
+                        String code = plugin.getConfig().getString("default-key");
+                        String encoded = enc.encodeToString(Objects.requireNonNull(code).getBytes());
+                        plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".code", encoded);
+                        plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".status", "true");
+                        plugin.data.saveConfig("data.yml");
+                    }
 
                 }
             }
