@@ -10,27 +10,32 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.Objects;
 
 public final class Main extends JavaPlugin implements Listener {
 
     FileConfiguration config = getConfig();
+
     public DataManager data;
 
     @Override
     public void onEnable() {
         // Plugin startup logic
         data = new DataManager(this);
-        config.options().copyDefaults(true);
-        saveConfig();
-        System.out.println("§aAthena Protection System Enabled!");
-        Bukkit.getPluginManager().registerEvents(new Staff(this), this);
 
-        if (Objects.requireNonNull(this.getConfig().getString("development.locked-server")).equalsIgnoreCase(Bukkit.getServer().getName())) {
-            Bukkit.getPluginManager().registerEvents(this, this);
-            Bukkit.broadcastMessage("§4[APS] §cDevelopment Server Detected! Locked All Player!");
-            Bukkit.broadcastMessage("§4[APS] §cYou can whitelist player in config.yml!");
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveResource("config.yml", true);
+        }else{
+            saveDefaultConfig();
         }
+
+        System.out.println("§aAthena Protection System Enabled!");
+
+        Bukkit.getPluginManager().registerEvents(new Staff(this), this);
+        new Staff(this).runTaskTimer(this, 20, 20);
+
         Objects.requireNonNull(getCommand("athenaprotection")).setExecutor(new AthenaProtectionCommand(this));
         Objects.requireNonNull(getCommand("access")).setExecutor(new AthenaProtectionCommand(this));
         Objects.requireNonNull(getCommand("setaccess")).setExecutor(new AthenaProtectionCommand(this));

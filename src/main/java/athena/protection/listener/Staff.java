@@ -1,6 +1,7 @@
 package athena.protection.listener;
 
 import athena.protection.Main;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,22 +11,39 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Base64;
 import java.util.Objects;
 
-public class Staff implements Listener {
-    private Main plugin;
+public class Staff extends BukkitRunnable implements Listener {
+    private final Main plugin;
     
     public Staff(Main plugin){
         this.plugin=plugin;
     }
+    @Override
+    public void run() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.hasPermission(Objects.requireNonNull(plugin.getConfig().getString("permission-detect")))) {
+                if (plugin.data.getConfig("data.yml").getString("players." + p.getName()) == null) {
+                    Base64.Encoder enc = Base64.getEncoder();
+                    String code = plugin.getConfig().getString("default-key");
+                    String encoded = enc.encodeToString(Objects.requireNonNull(code).getBytes());
+                    plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".code", encoded);
+                    plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".status", "true");
+                    plugin.data.saveConfig("data.yml");
+
+                }
+            }
+        }
+    }
     @EventHandler
     public void onCommandCode(PlayerCommandPreprocessEvent e){
-        Player p = e.getPlayer();
-        if(p.hasPermission("essentials.jail")) {
-            if (Objects.requireNonNull(plugin.data.getConfig().getString("players." + p.getName() + "." + p.getUniqueId() + ".status")).equalsIgnoreCase("true")) {
-                if (!e.getMessage().contains("access")) {
+        if(!e.getMessage().contains("access")) {
+            Player p = e.getPlayer();
+            if (plugin.data.getConfig("data.yml").getKeys(true).contains(p.getName())) {
+                if (Objects.requireNonNull(plugin.data.getConfig("data.yml").getString("players." + e.getPlayer().getName() + "." + e.getPlayer().getUniqueId() + ".status")).equalsIgnoreCase("true")) {
                     e.setCancelled(true);
                 }
             }
@@ -34,8 +52,9 @@ public class Staff implements Listener {
     @EventHandler
     public void onChatCode(AsyncPlayerChatEvent e){
         Player p = e.getPlayer();
-        if(p.hasPermission("essentials.jail")) {
-            if (Objects.requireNonNull(plugin.data.getConfig().getString("players." + p.getName() + "." + p.getUniqueId() + ".status")).equalsIgnoreCase("true")) {
+        String permission = plugin.getConfig().getString("permission-detect");
+        if(p.hasPermission(Objects.requireNonNull(permission))) {
+            if (Objects.requireNonNull(plugin.data.getConfig("data.yml").getString("players." + p.getName() + "." + p.getUniqueId() + ".status")).equalsIgnoreCase("true")) {
                 e.setCancelled(true);
             }
         }
@@ -43,8 +62,9 @@ public class Staff implements Listener {
     @EventHandler
     public void onBlockBreakCode(BlockBreakEvent e){
         Player p = e.getPlayer();
-        if(p.hasPermission("essentials.jail")) {
-            if (Objects.requireNonNull(plugin.data.getConfig().getString("players." + p.getName() + "." + p.getUniqueId() + ".status")).equalsIgnoreCase("true")) {
+        String permission = plugin.getConfig().getString("permission-detect");
+        if(p.hasPermission(Objects.requireNonNull(permission))) {
+            if (Objects.requireNonNull(plugin.data.getConfig("data.yml").getString("players." + p.getName() + "." + p.getUniqueId() + ".status")).equalsIgnoreCase("true")) {
                 e.setCancelled(true);
             }
         }
@@ -53,8 +73,9 @@ public class Staff implements Listener {
     public void onDamageCode(EntityDamageByEntityEvent e){
         if(e.getDamager() instanceof Player){
             Player p = (Player) e.getDamager();
-            if(p.hasPermission("essentials.jail")) {
-                if (Objects.requireNonNull(plugin.data.getConfig().getString("players." + p.getName() + "." + p.getUniqueId() + ".status")).equalsIgnoreCase("true")) {
+            String permission = plugin.getConfig().getString("permission-detect");
+            if(p.hasPermission(Objects.requireNonNull(permission))) {
+                if (Objects.requireNonNull(plugin.data.getConfig("data.yml").getString("players." + p.getName() + "." + p.getUniqueId() + ".status")).equalsIgnoreCase("true")) {
                     e.setCancelled(true);
                 }
             }
@@ -63,24 +84,25 @@ public class Staff implements Listener {
     @EventHandler
     public void JoinSetCode(PlayerJoinEvent e){
         Player p = e.getPlayer();
-        if(p.hasPermission("essentials.jail")){
-            if(plugin.data.getConfig().getString("players." + p.getName() + "." + p.getUniqueId() + ".code") == null){
+        String permission = plugin.getConfig().getString("permission-detect");
+        if(p.hasPermission(Objects.requireNonNull(permission))) {
+            if(plugin.data.getConfig("data.yml").getString("players." + p.getName() + "." + p.getUniqueId() + ".code") == null){
                 Base64.Encoder enc = Base64.getEncoder();
-                String code = "ProtectionStaff@CN2022";
-                String encoded = enc.encodeToString(code.getBytes());
-                plugin.data.getConfig().set("players." + p.getName() + "." + p.getUniqueId() + ".code", encoded);
-                plugin.data.saveConfig();
-
+                String code = plugin.getConfig().getString("default-key");
+                String encoded = enc.encodeToString(Objects.requireNonNull(code).getBytes());
+                plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".code", encoded);
+                plugin.data.saveConfig("data.yml");
             }
-            plugin.data.getConfig().set("players." + p.getName() + "." + p.getUniqueId() + ".status", "true");
-            plugin.data.saveConfig();
+            plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".status", "true");
+            plugin.data.saveConfig("data.yml");
         }
     }
     @EventHandler
     public void WalkProtection(PlayerMoveEvent e){
         Player p = e.getPlayer();
-        if(p.hasPermission("essentials.jail")) {
-            if (Objects.requireNonNull(plugin.data.getConfig().getString("players." + p.getName() + "." + p.getUniqueId() + ".status")).equalsIgnoreCase("true")) {
+        String permission = plugin.getConfig().getString("permission-detect");
+        if(p.hasPermission(Objects.requireNonNull(permission))) {
+            if (Objects.requireNonNull(plugin.data.getConfig("data.yml").getString("players." + p.getName() + "." + p.getUniqueId() + ".status")).equalsIgnoreCase("true")) {
                 e.setCancelled(true);
             }
         }
