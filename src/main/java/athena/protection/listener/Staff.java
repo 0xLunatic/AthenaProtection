@@ -44,8 +44,8 @@ public class Staff extends BukkitRunnable implements Listener {
     public void onCommandCode(PlayerCommandPreprocessEvent e){
         if(!e.getMessage().contains("access")) {
             Player p = e.getPlayer();
-            if (plugin.data.getConfig("data.yml").getKeys(true).contains(p.getName())) {
-                if (Objects.requireNonNull(plugin.data.getConfig("data.yml").getString("players." + e.getPlayer().getName() + "." + e.getPlayer().getUniqueId() + ".status")).equalsIgnoreCase("true")) {
+            if (plugin.data.getConfig("data.yml").getString("players." + p.getName()) != null) {
+                if (Objects.requireNonNull(plugin.data.getConfig("data.yml").getString("players." + p.getName() + "." + e.getPlayer().getUniqueId() + ".status")).equalsIgnoreCase("true")) {
                     e.setCancelled(true);
                 }
             }
