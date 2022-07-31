@@ -10,5 +10,3 @@ commands:
     permission: athenaprotection.use
   access:
     permission: essentials.jail
-  setaccess:
-    permission: essentials.jail

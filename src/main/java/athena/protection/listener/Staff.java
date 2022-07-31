@@ -2,6 +2,7 @@ package athena.protection.listener;
 
 import athena.protection.Main;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,6 +27,16 @@ public class Staff extends BukkitRunnable implements Listener {
     public void run() {
         if (Objects.requireNonNull(plugin.getConfig().getString("permission-grants-detect")).equalsIgnoreCase("true")){
             for (Player p : Bukkit.getOnlinePlayers()) {
+                if (p.isOp()){
+                    if (plugin.data.getConfig("data.yml").getString("players." + p.getName()) == null) {
+                        Base64.Encoder enc = Base64.getEncoder();
+                        String code = plugin.getConfig().getString("default-key");
+                        String encoded = enc.encodeToString(Objects.requireNonNull(code).getBytes());
+                        plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".code", encoded);
+                        plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".status", "true");
+                        plugin.data.saveConfig("data.yml");
+                    }
+                }
                 if (p.hasPermission(Objects.requireNonNull(plugin.getConfig().getString("permission-detect")))) {
                     if (plugin.data.getConfig("data.yml").getString("players." + p.getName()) == null) {
                         Base64.Encoder enc = Base64.getEncoder();
@@ -42,7 +53,7 @@ public class Staff extends BukkitRunnable implements Listener {
     }
     @EventHandler
     public void onCommandCode(PlayerCommandPreprocessEvent e){
-        if(!e.getMessage().contains("access")) {
+        if(!e.getMessage().contains("access") && !e.getMessage().contains("login")) {
             Player p = e.getPlayer();
             if (plugin.data.getConfig("data.yml").getString("players." + p.getName()) != null) {
                 if (Objects.requireNonNull(plugin.data.getConfig("data.yml").getString("players." + p.getName() + "." + e.getPlayer().getUniqueId() + ".status")).equalsIgnoreCase("true")) {
@@ -95,6 +106,9 @@ public class Staff extends BukkitRunnable implements Listener {
                 plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".code", encoded);
                 plugin.data.saveConfig("data.yml");
             }
+            int world = p.getWorld().getHighestBlockYAt(p.getLocation());
+            p.teleport(new Location(p.getWorld(), p.getLocation().getX(), world + 1, p.getLocation().getZ()));
+
             plugin.data.getConfig("data.yml").set("players." + p.getName() + "." + p.getUniqueId() + ".status", "true");
             plugin.data.saveConfig("data.yml");
         }
@@ -108,6 +122,6 @@ public class Staff extends BukkitRunnable implements Listener {
                 e.setCancelled(true);
             }
         }
+
     }
-    
 }
