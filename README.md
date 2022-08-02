@@ -5,8 +5,6 @@ Usage :
 
 - /access [key]
 To Access
-- /setaccess [key]
-To Change Your Access Key
 
 
 Default Config
